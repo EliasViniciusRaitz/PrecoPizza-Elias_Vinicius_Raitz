@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Precificação de Pizzas</title>
+
+    <style>
+
+        body {
+            background-color: gray;
+            display: flex;
+            justify-content: center;
+            align-items: top center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        div {
+            background-color: aliceblue;
+            justify-content: center;
+            border: 0.5rem solid black;
+            text-align: center;
+            padding: 1%;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        textarea {
+            resize: none;
+        }
+        
+    </style>
+</head>
+
+<body>
+    <main>
+        <div>
+            <h1>Precificação de Pizzas</h1>
+            <label for="idNomePizza">Nome:</label><br>
+            <textarea name="nameNomePizza" id="idNomePizza" cols="20" rows="1" required></textarea><br>
+
+            <label for="idTamanhoPizza">Tamanho (diâmetro em cm):</label>
+            <input type="number" name="nameTamanhoPizza" id="idTamanhoPizza" cols="20" rows="1" required><br>
+
+            <label for="idPrecoPizza">R$</label><br>
+            <input type="number" name="namePrecoPizza" id="idPrecoPizza" cols="20" rows="1" required><br>
+
+            <input style="margin: 10%;" type="button" id="idBtCadastrar" name="nameBtCadastrar" value="Cadastrar">
+
+        </div>
+
+        <div id="idpizzasCadastradas">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Tam. (cm)</th>
+                        <th>Preço (R$)</th>
+                        <th>R$ p/cm²</th>
+                        <th>Diferença%</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+    </main>
+
+    <script>
+
+        var nomePizzas = []
+        var tamanhoPizzas = []
+        var precoPizzas = []
+        var precoPorCmPizzas = []
+        var custoBeneficioPizzas = []
+
+        let botao = document.getElementById("idBtCadastrar")
+        
+        botao.onclick = function () {
+
+            let nomePizza = document.getElementById("idNomePizza").value;
+            let tamanhoPizza = Number(document.getElementById("idTamanhoPizza").value);
+            let precoPizza = Number(document.getElementById("idPrecoPizza").value);
+            let precoPorCmPizza = calcularPrecoPorCm(tamanhoPizza, precoPizza);
+
+            nomePizzas.push(nomePizza)
+            tamanhoPizzas.push(tamanhoPizza)
+            precoPizzas.push(precoPizza)
+            precoPorCmPizzas.push(precoPorCmPizza)
+
+            limparCampos();
+
+            ordenarPizzas();
+
+            calcularCustoBeneficio();
+
+            custoBeneficioPizzas[0] = "Melhor CB"
+
+            atualizarTabela();
+        }
+
+        function limparCampos(){
+            document.getElementById("idNomePizza").value = "";
+            document.getElementById("idTamanhoPizza").value = "";
+            document.getElementById("idPrecoPizza").value = "";
+        }
+
+        function calcularPrecoPorCm(tamanho, preco){
+            let area = (Math.PI * (tamanho / 2) ** 2);
+            return (preco / area).toFixed(2);
+        }
+
+        function ordenarPizzas(){
+            let trocou = true
+            while (trocou) {
+                trocou = false
+                for (let i = 0; i < (precoPorCmPizzas.length - 1); i++) {
+                    if (precoPorCmPizzas[i] > precoPorCmPizzas[i + 1]) {
+                        let auxPrecoPorCm = precoPorCmPizzas[i]
+                        let auxNome = nomePizzas[i]
+                        let auxTamanho = tamanhoPizzas[i]
+                        let auxPreco = precoPizzas[i]
+
+                        precoPorCmPizzas[i] = precoPorCmPizzas[i + 1]
+                        nomePizzas[i] = nomePizzas[i + 1]
+                        tamanhoPizzas[i] = tamanhoPizzas[i + 1]
+                        precoPizzas[i] = precoPizzas[i + 1]
+
+                        precoPorCmPizzas[i + 1] = auxPrecoPorCm
+                        nomePizzas[i + 1] = auxNome
+                        tamanhoPizzas[i + 1] = auxTamanho
+                        precoPizzas[i + 1] = auxPreco
+
+                        trocou = true
+                    }
+                }
+            }
+        }
+
+        function calcularCustoBeneficio(){
+            custoBeneficioPizzas[0] = 0
+            for(let i = 1; i < nomePizzas.length; i++){
+                let diferencaPercentual = "+ " + (((precoPorCmPizzas[i] - precoPorCmPizzas[i - 1]) / precoPorCmPizzas[i - 1]) * 100).toFixed(2) + "%"
+                custoBeneficioPizzas[i] = diferencaPercentual
+            }
+        }
+
+        function atualizarTabela() {
+            var tabela = document.querySelector("#idpizzasCadastradas tbody");
+
+            // Limpa o conteúdo atual da tabela
+            tabela.innerHTML = "";
+
+            // Percorre os vetores e adiciona os valores à tabela
+            for (var i = 0; i < nomePizzas.length; i++) {
+                let novaLinha = tabela.insertRow(tabela.rows.length);
+                let colunaNome = novaLinha.insertCell(0);
+                let colunaTamanho = novaLinha.insertCell(1);
+                let colunaPreco = novaLinha.insertCell(2);
+                let colunaPrecoPorCm = novaLinha.insertCell(3);
+                let colunaCustoBeneficio = novaLinha.insertCell(4);
+
+                colunaNome.innerHTML = nomePizzas[i];
+                colunaTamanho.innerHTML = tamanhoPizzas[i];
+                colunaPreco.innerHTML = precoPizzas[i];
+                colunaPrecoPorCm.innerHTML = precoPorCmPizzas[i];
+                colunaCustoBeneficio.innerHTML = custoBeneficioPizzas[i];
+                
+            }
+        }
+
+    </script>
+</body>
+
+</html>
